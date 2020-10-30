@@ -1,0 +1,6 @@
+node_modules
+/*.md
+/LICENSE
+/.editorconfig
+/.eslintrc.yml
+/.stylelintrc.yml
