@@ -1,0 +1,21 @@
+name: Web Deploy PR
+
+on: [pull_request]
+
+defaults:
+  run:
+    working-directory: web
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: amondnet/vercel-action@v19
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          github-token: ${{ secrets.PR_COMMENTS_GITHUB_TOKEN }}
+          vercel-org-id: ${{ secrets.WEB_ORG_ID }}
+          vercel-project-id: ${{ secrets.WEB_PROJECT_ID }}
+          alias-domains: |
+            pr-{{PR_NUMBER}}.${{ secrets.WEB_DOMAIN }}
