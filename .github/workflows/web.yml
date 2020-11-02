@@ -61,7 +61,7 @@ jobs:
           token: ${{ github.token }}
           target_url: https://${{ env.DEPLOYMENT_DOMAIN }}
           environment: ${{ env.DEPLOYMENT_ENV }}
-          ref: ${{ github.sha }}
+          ref: ${{ github.ref }}
 
       - uses: amondnet/vercel-action@v19
         with:
