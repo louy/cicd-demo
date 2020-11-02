@@ -1,6 +1,10 @@
 name: Web CI
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
 
 env:
   IMAGE_NAME: cicd-demo/web
@@ -17,6 +21,8 @@ jobs:
       - uses: actions/checkout@v2
       - run: echo "${{github.event_name}}"
       - run: echo "${{github.ref}}"
+      - run: echo "${{github.event.number}}"
+      - run: echo "${{github.event.issue.number}}"
 
   build:
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
@@ -43,19 +49,18 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     env:
-      DEPLOYMENT_ENV: pr-${{ github.event.issue.number }}
-      DEPLOYMENT_DOMAIN: pr-${{ github.event.issue.number }}.${{ secrets.WEB_DOMAIN }}
+      DEPLOYMENT_ENV: pr-${{ github.event.number }}
+      DEPLOYMENT_DOMAIN: pr-${{ github.event.number }}.${{ secrets.WEB_DOMAIN }}
     steps:
       - uses: actions/checkout@v2
 
-      - uses: chrnorm/deployment-action@releases/v1
-        name: Create GitHub deployment
+      - name: start deployment
+        uses: bobheadxi/deployments@master
         id: deployment
         with:
+          step: start
           token: ${{ github.token }}
-          target_url: https://${{ env.DEPLOYMENT_DOMAIN }}
-          environment: ${{ env.DEPLOYMENT_ENV }}
-          ref: ${{ github.sha }}
+          env: ${{ env.DEPLOYMENT_ENV }}
 
       - uses: amondnet/vercel-action@v19
         with:
@@ -68,23 +73,15 @@ jobs:
           alias-domains: |
             ${{ env.DEPLOYMENT_DOMAIN }}
 
-      - name: Update deployment status (success)
-        if: success()
-        uses: chrnorm/deployment-status@releases/v1
+      - name: update deployment status
+        uses: bobheadxi/deployments@master
+        if: always()
         with:
-          token: "${{ github.token }}"
-          target_url: https://${{ env.DEPLOYMENT_DOMAIN }}
-          state: "success"
+          step: finish
+          token: ${{ github.token }}
+          status: ${{ job.status }}
           deployment_id: ${{ steps.deployment.outputs.deployment_id }}
-
-      - name: Update deployment status (failure)
-        if: failure()
-        uses: chrnorm/deployment-status@releases/v1
-        with:
-          token: "${{ github.token }}"
-          target_url: https://${{ env.DEPLOYMENT_DOMAIN }}
-          state: "failure"
-          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+          env_url: https://${{ env.DEPLOYMENT_DOMAIN }}
 
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -96,14 +93,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: chrnorm/deployment-action@releases/v1
-        name: Create GitHub deployment
+      - name: start deployment
+        uses: bobheadxi/deployments@master
         id: deployment
         with:
+          step: start
           token: ${{ github.token }}
-          target_url: https://${{ env.DEPLOYMENT_DOMAIN }}
           environment: ${{ env.DEPLOYMENT_ENV }}
-          ref: ${{ github.sha }}
 
       - uses: amondnet/vercel-action@v19
         with:
@@ -115,20 +111,12 @@ jobs:
           vercel-project-id: ${{ secrets.WEB_PROJECT_ID }}
           vercel-args: "--prod"
 
-      - name: Update deployment status (success)
-        if: success()
-        uses: chrnorm/deployment-status@releases/v1
+      - name: update deployment status
+        uses: bobheadxi/deployments@master
+        if: always()
         with:
-          token: "${{ github.token }}"
-          target_url: https://${{ env.DEPLOYMENT_DOMAIN }}
-          state: "success"
+          step: finish
+          token: ${{ github.token }}
+          status: ${{ job.status }}
           deployment_id: ${{ steps.deployment.outputs.deployment_id }}
-
-      - name: Update deployment status (failure)
-        if: failure()
-        uses: chrnorm/deployment-status@releases/v1
-        with:
-          token: "${{ github.token }}"
-          target_url: https://${{ env.DEPLOYMENT_DOMAIN }}
-          state: "failure"
-          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+          env_url: https://${{ env.DEPLOYMENT_DOMAIN }}
