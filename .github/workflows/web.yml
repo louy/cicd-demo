@@ -19,6 +19,7 @@ jobs:
       - run: echo "${{github.ref}}"
 
   build:
+    if: github.event_name == 'pull_request' || github.ref == 'ref/heads/main'
     runs-on: ubuntu-latest
 
     strategy:
