@@ -49,6 +49,7 @@ jobs:
           working-directory: web
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           github-token: ${{ secrets.PR_COMMENTS_GITHUB_TOKEN }}
+          scope: ${{ secrets.WEB_ORG_ID }}
           vercel-org-id: ${{ secrets.WEB_ORG_ID }}
           vercel-project-id: ${{ secrets.WEB_PROJECT_ID }}
           alias-domains: |
@@ -66,6 +67,7 @@ jobs:
           working-directory: web
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           github-token: ${{ secrets.PR_COMMENTS_GITHUB_TOKEN }}
+          scope: ${{ secrets.WEB_ORG_ID }}
           vercel-org-id: ${{ secrets.WEB_ORG_ID }}
           vercel-project-id: ${{ secrets.WEB_PROJECT_ID }}
           vercel-args: "--prod"
