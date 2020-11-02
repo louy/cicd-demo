@@ -19,7 +19,7 @@ jobs:
       - run: echo "${{github.ref}}"
 
   build:
-    if: github.event_name == 'pull_request' || github.ref == 'ref/heads/main'
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     strategy:
@@ -56,7 +56,7 @@ jobs:
             pr-{{PR_NUMBER}}.${{ secrets.WEB_DOMAIN }}
 
   deploy:
-    if: github.event_name == 'push' && github.ref == 'ref/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [build]
     runs-on: ubuntu-latest
 
