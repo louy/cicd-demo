@@ -60,7 +60,7 @@ jobs:
         with:
           step: start
           token: ${{ github.token }}
-          environment: ${{ env.DEPLOYMENT_ENV }}
+          env: ${{ env.DEPLOYMENT_ENV }}
 
       - uses: amondnet/vercel-action@v19
         with:
