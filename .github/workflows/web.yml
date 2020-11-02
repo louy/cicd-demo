@@ -1,7 +1,6 @@
 name: Web CI
 
-on:
-  push:
+on: [push, pull_request]
 
 env:
   IMAGE_NAME: cicd-demo/web
@@ -20,43 +19,71 @@ jobs:
         node-version: [14.x]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm ci
-    - run: npm run build
-    - uses: actions/upload-artifact@v2
-      with:
-        name: web-build
-        path: web/build
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v2
+        with:
+          name: web-build
+          path: web/build
 
-    - name: Build docker image
-      run: docker build . --file Dockerfile --tag $IMAGE_NAME
+      - name: Build docker image
+        run: docker build . --file Dockerfile --tag $IMAGE_NAME
 
-    - name: Log into GitHub Container Registry
-    # TODO: Create a PAT with `read:packages` and `write:packages` scopes and save it as an Actions secret `CR_PAT`
-      run: echo "${{ secrets.CR_PAT }}" | docker login https://ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Log into GitHub Container Registry
+        run: echo "${{ secrets.CR_PAT }}" | docker login https://ghcr.io -u ${{ github.actor }} --password-stdin
 
-    - name: Push image to GitHub Container Registry
-      run: |
-        IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+      - name: Push image to GitHub Container Registry
+        run: |
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
 
-        # Change all uppercase to lowercase
-        IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
 
-        # Strip git ref prefix from version
-        VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
 
-        # Strip "v" prefix from tag name
-        [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
 
-        # Use Docker `latest` tag convention
-        [ "$VERSION" == "main" ] && VERSION=latest
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "main" ] && VERSION=latest
 
-        echo IMAGE_ID=$IMAGE_ID
-        echo VERSION=$VERSION
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
 
-        docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-        docker push $IMAGE_ID:$VERSION
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
+
+  deploy-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: amondnet/vercel-action@v19
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          github-token: ${{ secrets.PR_COMMENTS_GITHUB_TOKEN }}
+          vercel-org-id: ${{ secrets.WEB_ORG_ID }}
+          vercel-project-id: ${{ secrets.WEB_PROJECT_ID }}
+          alias-domains: |
+            pr-{{PR_NUMBER}}.${{ secrets.WEB_DOMAIN }}
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'ref/heads/main'
+    needs: [build]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: amondnet/vercel-action@v19
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          github-token: ${{ secrets.PR_COMMENTS_GITHUB_TOKEN }}
+          vercel-org-id: ${{ secrets.WEB_ORG_ID }}
+          vercel-project-id: ${{ secrets.WEB_PROJECT_ID }}
+          vercel-args: "--prod"
