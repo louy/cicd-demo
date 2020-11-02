@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DEPLOYMENT_ENV: pr-{{PR_NUMBER}}
-      DEPLOYMENT_DOMAIN: "${{ env.DEPLOYMENT_ENV }}.${{ secrets.WEB_DOMAIN }}"
+      DEPLOYMENT_DOMAIN: pr-{{PR_NUMBER}}.${{ secrets.WEB_DOMAIN }}
     steps:
       - uses: actions/checkout@v2
 
@@ -92,7 +92,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DEPLOYMENT_ENV: production
-      DEPLOYMENT_DOMAIN: "${{ secrets.WEB_DOMAIN }}"
+      DEPLOYMENT_DOMAIN: ${{ secrets.WEB_DOMAIN }}
     steps:
       - uses: actions/checkout@v2
 
