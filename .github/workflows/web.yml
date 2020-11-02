@@ -42,8 +42,21 @@ jobs:
   deploy-pr:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    env:
+      DEPLOYMENT_ENV: pr-{{PR_NUMBER}}
+      DEPLOYMENT_DOMAIN: "${{ env.DEPLOYMENT_ENV }}.${{ secrets.WEB_DOMAIN }}"
     steps:
       - uses: actions/checkout@v2
+
+      - uses: chrnorm/deployment-action@releases/v1
+        name: Create GitHub deployment
+        id: deployment
+        with:
+          token: ${{ github.token }}
+          target_url: https://${{ env.DEPLOYMENT_DOMAIN }}
+          environment: ${{ env.DEPLOYMENT_ENV }}
+          ref: ${{ github.sha }}
+
       - uses: amondnet/vercel-action@v19
         with:
           working-directory: web
@@ -53,15 +66,45 @@ jobs:
           vercel-org-id: ${{ secrets.WEB_ORG_ID }}
           vercel-project-id: ${{ secrets.WEB_PROJECT_ID }}
           alias-domains: |
-            pr-{{PR_NUMBER}}.${{ secrets.WEB_DOMAIN }}
+            ${{ env.DEPLOYMENT_DOMAIN }}
+
+      - name: Update deployment status (success)
+        if: success()
+        uses: chrnorm/deployment-status@releases/v1
+        with:
+          token: "${{ github.token }}"
+          target_url: https://${{ env.DEPLOYMENT_DOMAIN }}
+          state: "success"
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+
+      - name: Update deployment status (failure)
+        if: failure()
+        uses: chrnorm/deployment-status@releases/v1
+        with:
+          token: "${{ github.token }}"
+          target_url: https://${{ env.DEPLOYMENT_DOMAIN }}
+          state: "failure"
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
 
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [build]
     runs-on: ubuntu-latest
-
+    env:
+      DEPLOYMENT_ENV: production
+      DEPLOYMENT_DOMAIN: "${{ secrets.WEB_DOMAIN }}"
     steps:
       - uses: actions/checkout@v2
+
+      - uses: chrnorm/deployment-action@releases/v1
+        name: Create GitHub deployment
+        id: deployment
+        with:
+          token: ${{ github.token }}
+          target_url: https://${{ env.DEPLOYMENT_DOMAIN }}
+          environment: ${{ env.DEPLOYMENT_ENV }}
+          ref: ${{ github.sha }}
+
       - uses: amondnet/vercel-action@v19
         with:
           working-directory: web
@@ -71,3 +114,21 @@ jobs:
           vercel-org-id: ${{ secrets.WEB_ORG_ID }}
           vercel-project-id: ${{ secrets.WEB_PROJECT_ID }}
           vercel-args: "--prod"
+
+      - name: Update deployment status (success)
+        if: success()
+        uses: chrnorm/deployment-status@releases/v1
+        with:
+          token: "${{ github.token }}"
+          target_url: https://${{ env.DEPLOYMENT_DOMAIN }}
+          state: "success"
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+
+      - name: Update deployment status (failure)
+        if: failure()
+        uses: chrnorm/deployment-status@releases/v1
+        with:
+          token: "${{ github.token }}"
+          target_url: https://${{ env.DEPLOYMENT_DOMAIN }}
+          state: "failure"
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
