@@ -14,8 +14,9 @@ jobs:
   debug:
     runs-on: ubuntu-latest
     steps:
-      - run: echo ${{github.event_name}}
-      - run: echo ${{github.ref}}
+      - uses: actions/checkout@v2.1.0
+      - run: echo "${{github.event_name}}"
+      - run: echo "${{github.ref}}"
 
   build:
     runs-on: ubuntu-latest
