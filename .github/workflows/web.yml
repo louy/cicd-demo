@@ -1,6 +1,10 @@
 name: Web CI
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
 
 env:
   IMAGE_NAME: cicd-demo/web
