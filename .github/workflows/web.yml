@@ -43,8 +43,8 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     env:
-      DEPLOYMENT_ENV: pr-{{PR_NUMBER}}
-      DEPLOYMENT_DOMAIN: pr-{{PR_NUMBER}}.${{ secrets.WEB_DOMAIN }}
+      DEPLOYMENT_ENV: pr-${{ github.event.issue.number }}
+      DEPLOYMENT_DOMAIN: pr-${{ github.event.issue.number }}.${{ secrets.WEB_DOMAIN }}
     steps:
       - uses: actions/checkout@v2
 
