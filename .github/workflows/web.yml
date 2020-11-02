@@ -14,7 +14,7 @@ jobs:
   debug:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.1.0
+      - uses: actions/checkout@v2
       - run: echo "${{github.event_name}}"
       - run: echo "${{github.ref}}"
 
@@ -45,6 +45,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: amondnet/vercel-action@v19
         with:
+          working-directory: web
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           github-token: ${{ secrets.PR_COMMENTS_GITHUB_TOKEN }}
           vercel-org-id: ${{ secrets.WEB_ORG_ID }}
@@ -61,6 +62,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: amondnet/vercel-action@v19
         with:
+          working-directory: web
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           github-token: ${{ secrets.PR_COMMENTS_GITHUB_TOKEN }}
           vercel-org-id: ${{ secrets.WEB_ORG_ID }}
