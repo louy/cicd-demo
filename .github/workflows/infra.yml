@@ -102,6 +102,7 @@ jobs:
           name: terraform-plan
 
       - run: ls
+      - run: ls ..
 
       - name: Terraform apply
         id: apply
