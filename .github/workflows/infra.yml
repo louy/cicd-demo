@@ -97,6 +97,10 @@ jobs:
         with:
           terraform_version: 0.13.5
 
+      - name: Terraform Init
+        id: init
+        run: terraform init -input=false
+
       - name: Load plan
         uses: actions/download-artifact@v2
         with:
