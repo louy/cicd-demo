@@ -39,13 +39,19 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
 
+      - uses: actions/github-script@v3
+        id: infra-check-name
+        with:
+          script: "github.event_name == 'pull_request' ? 'pr_output' : 'apply_output'"
+          result-encoding: string
+
       - name: Wait for infra deploy to succeed
         # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: fountainhead/action-wait-for-check@v1.0.0
         id: wait-for-build
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: pr_output
+          checkName: ${{ steps.infra-check-name.outputs.result }}
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Download infra output
         # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -58,14 +64,12 @@ jobs:
           name: terraform-output
           path: infra
 
-      - run: ls
-      - run: ls ..
-      - run: ls ../infra
+      - run: cat ../infra/terraform-output.json
 
       - name: Extract build args from terraform output
         run: |
-          if [ -f "infra/terraform-output.json" ]; then
-            TEST_VALUE=$(cat infra/terraform-output.json | jq -r '.test.value')
+          if [ -f "../infra/terraform-output.json" ]; then
+            TEST_VALUE=$(cat ../infra/terraform-output.json | jq -r '.test.value')
             echo "TEST_VALUE=$TEST_VALUE" >> $GITHUB_ENV
           fi
 

@@ -137,7 +137,7 @@ jobs:
           path: ./infra/terraform-output.json
           if-no-files-found: error
 
-  deploy_output:
+  apply_output:
     needs: [apply]
     runs-on: ubuntu-latest
     outputs:
