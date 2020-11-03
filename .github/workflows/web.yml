@@ -42,7 +42,8 @@ jobs:
       - uses: actions/github-script@v3
         id: infra-check-name
         with:
-          script: "github.event_name == 'pull_request' ? 'pr_output' : 'apply_output'"
+          script: |
+            return github.event_name == 'pull_request' ? 'pr_output' : 'apply_output'
           result-encoding: string
 
       - name: Wait for infra deploy to succeed
