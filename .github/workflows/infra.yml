@@ -126,7 +126,7 @@ jobs:
       - name: Terraform output
         id: output
         run: terraform output -json -no-color
-      - uses: DamianReeves/write-file-action
+      - uses: DamianReeves/write-file-action@1.0
         with:
           path: ./terraform-output.json
           contents: ${{ steps.output.outputs.stdout }}
@@ -152,9 +152,12 @@ jobs:
         run: terraform init -input=false
       - name: Terraform output
         id: output
-        run: |
-          terraform output -json -no-color > terraform-output.json
-          echo "::set-output name=json::$(cat terraform-output.json)"
+        run: terraform output -json -no-color
+      - uses: DamianReeves/write-file-action@1.0
+        with:
+          path: ./terraform-output.json
+          contents: ${{ steps.output.outputs.stdout }}
+          write-mode: overwrite
       - name: Store output
         uses: actions/upload-artifact@v2
         with:
