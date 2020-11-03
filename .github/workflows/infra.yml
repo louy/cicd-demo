@@ -49,6 +49,7 @@ jobs:
         with:
           name: terraform-plan
           path: ./infra/terraform.plan
+          if-no-files-found: error
 
       - name: Find Comment
         uses: peter-evans/find-comment@v1
@@ -99,6 +100,8 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: terraform-plan
+
+      - run: ls
 
       - name: Terraform apply
         id: apply
