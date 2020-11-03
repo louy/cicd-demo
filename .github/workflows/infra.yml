@@ -41,8 +41,14 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -input=false
+        run: terraform plan -no-color -input=false -out terraform.plan
         continue-on-error: true
+
+      - name: Store plan
+        uses: actions/upload-artifact@v2
+        with:
+          name: terraform-plan
+          path: terraform.plan
 
       - name: Find Comment
         uses: peter-evans/find-comment@v1
@@ -50,7 +56,6 @@ jobs:
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          comment-author: "github-actions[bot]"
           body-includes: "Terraform Format and Style 🖌"
 
       - name: Add comment
@@ -59,6 +64,7 @@ jobs:
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
           body: |
             #### Terraform Format and Style 🖌
             `${{ steps.fmt.outcome }}`
@@ -78,3 +84,22 @@ jobs:
 
             </details>
           reaction-type: "rocket"
+
+  apply:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [plan]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.13.5
+
+      - name: Load plan
+        uses: actions/download-artifact@v2
+        with:
+          name: terraform-plan
+
+      - name: Terraform apply
+        id: apply
+        run: terraform apply -input=false -auto-approve -compact-warnings terraform.plan
