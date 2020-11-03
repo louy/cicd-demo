@@ -136,7 +136,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: terraform-output
-          path: ./infra/terraform-output.json
+          path: ./terraform-output.json
           if-no-files-found: error
 
   apply_output:
@@ -162,5 +162,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: terraform-output
-          path: ./infra/terraform-output.json
+          path: ./terraform-output.json
           if-no-files-found: error
