@@ -46,7 +46,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           checkName: pr_output
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Download infra output
         # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: dawidd6/action-download-artifact@v2
@@ -54,7 +54,7 @@ jobs:
           github_token: ${{secrets.GITHUB_TOKEN}}
           # Required, workflow file name or ID
           workflow: infra.yml
-          commit: ${{ github.sha }}
+          commit: ${{ github.event.pull_request.head.sha || github.sha }}
           name: terraform-output
           path: infra
 
