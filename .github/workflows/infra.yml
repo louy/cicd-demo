@@ -115,8 +115,6 @@ jobs:
     if: github.event_name == 'pull_request'
     needs: [plan]
     runs-on: ubuntu-latest
-    outputs:
-      json: ${{ steps.output.outputs.json }}
     steps:
       - uses: actions/checkout@v2
       - uses: hashicorp/setup-terraform@v1
@@ -129,7 +127,7 @@ jobs:
         id: output
         run: |
           terraform output -json -no-color > terraform-output.json
-          echo "::set-output name=json::$(cat terraform-output.json)"
+          cat terraform-output.json | jq .
       - name: Store output
         uses: actions/upload-artifact@v2
         with:
@@ -140,8 +138,6 @@ jobs:
   apply_output:
     needs: [apply]
     runs-on: ubuntu-latest
-    outputs:
-      json: ${{ steps.output.outputs.json }}
     steps:
       - uses: actions/checkout@v2
       - uses: hashicorp/setup-terraform@v1
