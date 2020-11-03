@@ -54,6 +54,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ steps.infra-check-name.outputs.result }}
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          timeoutSeconds: 60
       - name: Download infra output
         # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: dawidd6/action-download-artifact@v2
