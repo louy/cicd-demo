@@ -112,3 +112,28 @@ jobs:
       - name: Terraform apply
         id: apply
         run: terraform apply -input=false -auto-approve -compact-warnings terraform.plan
+
+  output:
+    needs: [plan, apply]
+    runs-on: ubuntu-latest
+    outputs:
+      json: ${{ steps.output.outputs.json }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.13.5
+      - name: Terraform Init
+        id: init
+        run: terraform init -input=false
+      - name: Terraform output
+        id: output
+        run: |
+          terraform output -json -no-color > terraform-output.json
+          echo "::set-output name=json::$(cat terraform-output.json)"
+      - name: Store output
+        uses: actions/upload-artifact@v2
+        with:
+          name: terraform-output
+          path: ./infra/terraform-output.json
+          if-no-files-found: error
