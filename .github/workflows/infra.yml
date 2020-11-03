@@ -7,6 +7,7 @@ on:
       - "main"
 
 env:
+  TF_CLI_ARGS: "-input=false"
   TF_HTTP_ADDRESS: ${{ secrets.TF_HTTP_ADDRESS }}
   TF_HTTP_USERNAME: ${{ secrets.TF_HTTP_USERNAME }}
   TF_HTTP_PASSWORD: ${{ secrets.TF_HTTP_PASSWORD }}
