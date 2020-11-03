@@ -7,7 +7,6 @@ on:
       - "main"
 
 env:
-  TF_CLI_ARGS: "-input=false"
   TF_HTTP_ADDRESS: ${{ secrets.TF_HTTP_ADDRESS }}
   TF_HTTP_USERNAME: ${{ secrets.TF_HTTP_USERNAME }}
   TF_HTTP_PASSWORD: ${{ secrets.TF_HTTP_PASSWORD }}
@@ -34,7 +33,7 @@ jobs:
 
       - name: Terraform Init
         id: init
-        run: terraform init
+        run: terraform init -input=false
 
       - name: Terraform Validate
         id: validate
@@ -42,7 +41,7 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color
+        run: terraform plan -no-color -input=false
         continue-on-error: true
 
       - uses: actions/github-script@0.9.0
