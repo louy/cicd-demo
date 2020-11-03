@@ -31,6 +31,7 @@ resource sentry_project web {
 output sentry_web_project_id { value = sentry_project.web.id }
 
 data sentry_key web {
+  depends_on   = [sentry_project.web]
   organization = var.sentry_org
   project      = "web-app"
   name         = "Default"
