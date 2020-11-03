@@ -38,7 +38,39 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
+
+      - name: Wait for infra deploy to succeed
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: fountainhead/action-wait-for-check@v1.0.0
+        id: wait-for-build
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: infra
+          ref: ${{ github.sha }}
+      - name: Download infra output
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          # Required, workflow file name or ID
+          workflow: infra.yml
+          commit: ${{ github.sha }}
+          name: terraform-output
+          path: infra
+
+      - run: ls
+      - run: ls ..
+      - run: ls ../infra
+
+      - name: Extract build args from terraform output
+        run: |
+          if [ -f "infra/terraform-output.json" ]; then
+            SENTRY_DSN=$(cat infra/terraform-output.json | jq -r '.sentry_web_project_key_dsn_public.value')
+            echo "SENTRY_DSN=$SENTRY_DSN" >> $GITHUB_ENV
+          fi
+
       - run: npm run build
+
       - uses: actions/upload-artifact@v2
         with:
           name: web-build
