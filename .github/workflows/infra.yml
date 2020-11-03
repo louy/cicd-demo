@@ -126,7 +126,7 @@ jobs:
       - name: Terraform output
         id: output
         run: terraform output -json -no-color
-      - uses: DamianReeves/write-file-action@1.0
+      - uses: DamianReeves/write-file-action@v1.0
         with:
           path: ./terraform-output.json
           contents: ${{ steps.output.outputs.stdout }}
@@ -153,7 +153,7 @@ jobs:
       - name: Terraform output
         id: output
         run: terraform output -json -no-color
-      - uses: DamianReeves/write-file-action@1.0
+      - uses: DamianReeves/write-file-action@v1.0
         with:
           path: ./terraform-output.json
           contents: ${{ steps.output.outputs.stdout }}
