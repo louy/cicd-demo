@@ -1,0 +1,105 @@
+name: Infra CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
+
+env:
+  TF_HTTP_ADDRESS: ${{ secrets.TF_HTTP_ADDRESS }}
+  TF_HTTP_USERNAME: ${{ secrets.TF_HTTP_USERNAME }}
+  TF_HTTP_PASSWORD: ${{ secrets.TF_HTTP_PASSWORD }}
+  TF_HTTP_LOCK_ADDRESS: ${{ secrets.TF_HTTP_LOCK_ADDRESS }}
+  TF_HTTP_UNLOCK_ADDRESS: ${{ secrets.TF_HTTP_UNLOCK_ADDRESS }}
+
+defaults:
+  run:
+    working-directory: infra
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.13.5
+
+      - name: Terraform fmt
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: true
+
+      - name: Terraform Init
+        id: init
+        run: terraform init -input=false
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -input=false -out terraform.plan
+        continue-on-error: true
+
+      - name: Store plan
+        uses: actions/upload-artifact@v2
+        with:
+          name: terraform-plan
+          path: terraform.plan
+
+      - name: Find Comment
+        uses: peter-evans/find-comment@v1
+        if: github.event_name == 'pull_request' && always()
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: "Terraform Format and Style 🖌"
+
+      - name: Add comment
+        if: github.event_name == 'pull_request' && always()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            #### Terraform Format and Style 🖌
+            `${{ steps.fmt.outcome }}`
+
+            #### Terraform Initialization ⚙️
+            `${{ steps.init.outcome }}`
+
+            #### Terraform Validation 🤖
+            ${{ steps.validate.outputs.stdout }}
+
+            #### Terraform Plan 📖
+            `${{ steps.plan.outcome }}`
+
+            <details><summary>Show Plan</summary>
+
+            ```terraform\n${{ steps.plan.outputs.stdout }}```
+
+            </details>
+          reaction-type: "rocket"
+
+  apply:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [plan]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.13.5
+
+      - name: Load plan
+        uses: actions/download-artifact@v2
+        with:
+          name: terraform-plan
+
+      - name: Terraform apply
+        id: apply
+        run: terraform apply -input=false -auto-approve -compact-warnings terraform.plan
