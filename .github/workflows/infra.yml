@@ -50,6 +50,7 @@ jobs:
           name: terraform-plan
           path: ./infra/terraform.plan
           if-no-files-found: error
+        continue-on-error: true
 
       - name: Find Comment
         uses: peter-evans/find-comment@v1
@@ -101,8 +102,8 @@ jobs:
         with:
           name: terraform-plan
 
-      - run: ls
-      - run: ls ..
+      # P.S. the artifacts actions from github seem a bit broken with custom workdirs, so the below is necessary
+      - run: mv ../terraform.plan ./
 
       - name: Terraform apply
         id: apply
