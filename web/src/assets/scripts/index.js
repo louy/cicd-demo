@@ -1,5 +1,7 @@
 import '../styles/index.scss';
 
+import './sentry-setup';
+
 import './masonry';
 import './charts';
 import './popover';

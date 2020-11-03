@@ -35,3 +35,21 @@ You'll need to add the following variables to Github Secrets:
 | `TF_HTTP_PASSWORD` | the password of the http backend |
 | `TF_HTTP_LOCK_ADDRESS` | the url of the http backend lock url (if the backend supports locking) |
 | `TF_HTTP_UNLOCK_ADDRESS` | the url of the http backend unlock url (if the backend supports locking) |
+
+3. Sentry.io
+
+We use sentry for production error tracking and environment monitoring.
+
+For the token, we suggest creating an org internal integration with the following permissions:
+
+- **Project**: Admin
+- **Team**: Admin
+- **Release**: Admin
+- **Issue & Event**: Admin
+- **Organisation**: Admin
+
+You'll need to add the following variables to Github Secrets:
+| Variable | Explaination |
+|---|---|
+| `SENTRY_TOKEN` | accses token from the created integration |
+| `SENTRY_ORG` | organisation slug for the org in sentry |
