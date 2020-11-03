@@ -45,7 +45,7 @@ jobs:
         id: wait-for-build
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: infra
+          checkName: pr_output
           ref: ${{ github.sha }}
       - name: Download infra output
         # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
