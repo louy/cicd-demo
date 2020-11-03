@@ -32,9 +32,6 @@ jobs:
         run: terraform fmt -check
         continue-on-error: true
 
-      - run: echo $TF_HTTP_ADDRESS
-      - run: echo $TF_HTTP_USERNAME
-
       - name: Terraform Init
         id: init
         run: terraform init
