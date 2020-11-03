@@ -42,7 +42,6 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: terraform plan -no-color -input=false -out terraform.plan
-        continue-on-error: true
 
       - name: Store plan
         uses: actions/upload-artifact@v2
@@ -50,7 +49,6 @@ jobs:
           name: terraform-plan
           path: ./infra/terraform.plan
           if-no-files-found: error
-        continue-on-error: true
 
       - name: Find Comment
         uses: peter-evans/find-comment@v1
