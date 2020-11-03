@@ -40,7 +40,7 @@ jobs:
       - run: npm ci
 
       - name: Wait for infra deploy to succeed
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: fountainhead/action-wait-for-check@v1.0.0
         id: wait-for-build
         with:
@@ -48,7 +48,7 @@ jobs:
           checkName: infra
           ref: ${{ github.sha }}
       - name: Download infra output
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: dawidd6/action-download-artifact@v2
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -65,9 +65,11 @@ jobs:
       - name: Extract build args from terraform output
         run: |
           if [ -f "infra/terraform-output.json" ]; then
-            SENTRY_DSN=$(cat infra/terraform-output.json | jq -r '.sentry_web_project_key_dsn_public.value')
-            echo "SENTRY_DSN=$SENTRY_DSN" >> $GITHUB_ENV
+            TEST_VALUE=$(cat infra/terraform-output.json | jq -r '.test.value')
+            echo "TEST_VALUE=$TEST_VALUE" >> $GITHUB_ENV
           fi
+
+      - run: echo $TEST_VALUE
 
       - run: npm run build
 
