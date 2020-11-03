@@ -68,7 +68,7 @@ jobs:
         run: |
           if [ -f "../infra/terraform-output.json" ]; then
             SENTRY_DSN=$(cat ../infra/terraform-output.json | jq -r '.sentry_web_project_key_dsn_public.value')
-            echo "SENTRY_DSN=$SENTRY_DSN" >> $GITHUB_ENV
+            echo "REACT_APP_SENTRY_DSN=$SENTRY_DSN" >> $GITHUB_ENV
           fi
 
       - run: npm run build
