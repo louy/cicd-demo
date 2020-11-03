@@ -125,10 +125,14 @@ jobs:
         run: terraform init -input=false
       - name: Terraform output
         id: output
-        run: |
-          terraform output -json -no-color > terraform-output.json
-          cat terraform-output.json | jq .
+        run: terraform output -json -no-color
+      - uses: DamianReeves/write-file-action
+        with:
+          path: ./terraform-output.json
+          contents: ${{ steps.output.outputs.stdout }}
+          write-mode: overwrite
       - name: Store output
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: terraform-output
