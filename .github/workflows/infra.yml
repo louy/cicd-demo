@@ -114,6 +114,7 @@ jobs:
         run: terraform apply -input=false -auto-approve -compact-warnings terraform.plan
 
   output:
+    if: ${{ true }}
     needs: [plan, apply]
     runs-on: ubuntu-latest
     outputs:
