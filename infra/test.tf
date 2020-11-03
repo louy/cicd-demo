@@ -5,3 +5,5 @@ resource null_resource test {
 resource null_resource test2 {
   triggers = {}
 }
+
+output test { value = 123 }

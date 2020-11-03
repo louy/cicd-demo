@@ -42,7 +42,6 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: terraform plan -no-color -input=false -out terraform.plan
-        continue-on-error: true
 
       - name: Store plan
         uses: actions/upload-artifact@v2
@@ -50,7 +49,6 @@ jobs:
           name: terraform-plan
           path: ./infra/terraform.plan
           if-no-files-found: error
-        continue-on-error: true
 
       - name: Find Comment
         uses: peter-evans/find-comment@v1
@@ -112,3 +110,57 @@ jobs:
       - name: Terraform apply
         id: apply
         run: terraform apply -input=false -auto-approve -compact-warnings terraform.plan
+
+  pr_output:
+    if: github.event_name == 'pull_request'
+    needs: [plan]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.13.5
+      - name: Terraform Init
+        id: init
+        run: terraform init -input=false
+      - name: Terraform output
+        id: output
+        run: terraform output -json -no-color
+      - uses: DamianReeves/write-file-action@v1.0
+        with:
+          path: ./terraform-output.json
+          contents: ${{ steps.output.outputs.stdout }}
+          write-mode: overwrite
+      - name: Store output
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: terraform-output
+          path: ./terraform-output.json
+          if-no-files-found: error
+
+  apply_output:
+    needs: [apply]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.13.5
+      - name: Terraform Init
+        id: init
+        run: terraform init -input=false
+      - name: Terraform output
+        id: output
+        run: terraform output -json -no-color
+      - uses: DamianReeves/write-file-action@v1.0
+        with:
+          path: ./terraform-output.json
+          contents: ${{ steps.output.outputs.stdout }}
+          write-mode: overwrite
+      - name: Store output
+        uses: actions/upload-artifact@v2
+        with:
+          name: terraform-output
+          path: ./terraform-output.json
+          if-no-files-found: error
