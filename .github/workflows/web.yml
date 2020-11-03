@@ -14,6 +14,16 @@ defaults:
     working-directory: web
 
 jobs:
+  check_new_dependencies:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check for new dependencies
+        uses: hiwelo/new-dependencies-action@1.0.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
   build:
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
