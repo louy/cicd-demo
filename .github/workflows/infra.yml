@@ -48,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: terraform-plan
-          path: ./terraform.plan
+          path: ./infra/terraform.plan
 
       - name: Find Comment
         uses: peter-evans/find-comment@v1
