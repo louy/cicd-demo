@@ -1,0 +1,7 @@
+{
+  "github": {
+    "enabled": false
+  },
+  "routes": [{ "src": "/(.*)", "dest": "/build/$1" }],
+  "builds": [{ "src": "/build/**/*", "use": "@vercel/static" }]
+}

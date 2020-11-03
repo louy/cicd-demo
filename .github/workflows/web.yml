@@ -63,6 +63,14 @@ jobs:
             echo "TEST_VALUE=$TEST_VALUE" >> $GITHUB_ENV
           fi
 
+      - name: Extract prod build args from terraform output
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          if [ -f "../infra/terraform-output.json" ]; then
+            SENTRY_DSN=$(cat ../infra/terraform-output.json | jq -r '.sentry_web_project_key_dsn_public.value')
+            echo "SENTRY_DSN=$SENTRY_DSN" >> $GITHUB_ENV
+          fi
+
       - run: npm run build
 
       - uses: actions/upload-artifact@v2
@@ -72,12 +80,18 @@ jobs:
 
   deploy-pr:
     if: github.event_name == 'pull_request'
+    needs: [build]
     runs-on: ubuntu-latest
     env:
       DEPLOYMENT_ENV: pr-${{ github.event.number }}
       DEPLOYMENT_DOMAIN: pr-${{ github.event.number }}.${{ secrets.WEB_DOMAIN }}
     steps:
       - uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: web-build
+          path: web/build
 
       - name: start deployment
         uses: bobheadxi/deployments@master
@@ -117,6 +131,11 @@ jobs:
       DEPLOYMENT_DOMAIN: ${{ secrets.WEB_DOMAIN }}
     steps:
       - uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: web-build
+          path: web/build
 
       - name: start deployment
         uses: bobheadxi/deployments@master
